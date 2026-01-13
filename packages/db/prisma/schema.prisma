@@ -1,0 +1,281 @@
+// Stoop Sale Database Schema
+// Capturing the magic of yard sales in data
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// AUTH & USERS
+// ============================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  bio           String?   @db.Text
+
+  // Location for neighborhood browsing
+  neighborhood  String?
+  city          String?
+  latitude      Float?
+  longitude     Float?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  sales         Sale[]
+  messages      Message[]     @relation("SentMessages")
+  receivedMsgs  Message[]     @relation("ReceivedMessages")
+  offers        Offer[]
+  savedItems    SavedItem[]
+
+  // Ratings as seller
+  ratingsReceived Rating[]  @relation("RatingsReceived")
+  ratingsGiven    Rating[]  @relation("RatingsGiven")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================
+// SALES - The heart of it all
+// ============================================
+
+model Sale {
+  id          String    @id @default(cuid())
+  sellerId    String
+  seller      User      @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  // Sale details
+  title       String    // "Moving Sale!", "Vintage Finds", etc.
+  description String?   @db.Text
+  theme       SaleTheme @default(GENERAL)
+
+  // TIME-LIMITED - This is the magic!
+  startsAt    DateTime
+  endsAt      DateTime
+  isLive      Boolean   @default(false)
+
+  // Location
+  address     String?
+  city        String
+  neighborhood String?
+  zipCode     String?
+  latitude    Float
+  longitude   Float
+
+  // The canvas layout - stored as JSON
+  // Contains item positions, rotations, scales
+  canvasLayout Json?
+  canvasBackground CanvasBackground @default(BLANKET)
+
+  // Stats
+  viewCount   Int       @default(0)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  items       Item[]
+  messages    Message[]
+
+  @@index([latitude, longitude])
+  @@index([startsAt, endsAt])
+  @@index([isLive])
+}
+
+enum SaleTheme {
+  GENERAL
+  MOVING
+  VINTAGE
+  KIDS
+  ESTATE
+  ELECTRONICS
+  BOOKS
+  FURNITURE
+  CLOTHING
+  HOLIDAY
+}
+
+enum CanvasBackground {
+  BLANKET
+  GRASS
+  WOOD
+  CONCRETE
+  DRIVEWAY
+  PORCH
+}
+
+// ============================================
+// ITEMS - Things on the virtual blanket
+// ============================================
+
+model Item {
+  id          String    @id @default(cuid())
+  saleId      String
+  sale        Sale      @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  // Basic info
+  title       String
+  description String?   @db.Text
+  price       Float     // In dollars
+  isOBO       Boolean   @default(true)  // "Or Best Offer" - yard sale staple!
+
+  // Images
+  images      String[]  // Array of image URLs
+
+  // Canvas position (for visual layout)
+  // These get saved in the Sale's canvasLayout too,
+  // but keeping here for easy querying
+  positionX   Float     @default(0)
+  positionY   Float     @default(0)
+  rotation    Float     @default(0)
+  scale       Float     @default(1)
+
+  // Status
+  status      ItemStatus @default(AVAILABLE)
+  soldAt      DateTime?
+  soldPrice   Float?
+
+  // Categorization (loose, not strict)
+  category    String?
+  tags        String[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  offers      Offer[]
+  savedBy     SavedItem[]
+
+  @@index([saleId])
+  @@index([status])
+}
+
+enum ItemStatus {
+  AVAILABLE
+  PENDING    // Someone's interested
+  SOLD
+  REMOVED
+}
+
+// ============================================
+// INTERACTIONS - The social layer
+// ============================================
+
+model Message {
+  id          String    @id @default(cuid())
+  saleId      String
+  sale        Sale      @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  senderId    String
+  sender      User      @relation("SentMessages", fields: [senderId], references: [id])
+
+  receiverId  String
+  receiver    User      @relation("ReceivedMessages", fields: [receiverId], references: [id])
+
+  content     String    @db.Text
+  isRead      Boolean   @default(false)
+
+  createdAt   DateTime  @default(now())
+
+  @@index([saleId])
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+model Offer {
+  id          String    @id @default(cuid())
+  itemId      String
+  item        Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  buyerId     String
+  buyer       User      @relation(fields: [buyerId], references: [id])
+
+  amount      Float
+  message     String?   @db.Text  // "Would you take $5?"
+  status      OfferStatus @default(PENDING)
+
+  createdAt   DateTime  @default(now())
+  respondedAt DateTime?
+
+  @@index([itemId])
+  @@index([buyerId])
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  COUNTERED
+  EXPIRED
+}
+
+model SavedItem {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemId      String
+  item        Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime  @default(now())
+
+  @@unique([userId, itemId])
+}
+
+model Rating {
+  id          String    @id @default(cuid())
+
+  fromUserId  String
+  fromUser    User      @relation("RatingsGiven", fields: [fromUserId], references: [id])
+
+  toUserId    String
+  toUser      User      @relation("RatingsReceived", fields: [toUserId], references: [id])
+
+  score       Int       // 1-5 stars
+  comment     String?   @db.Text
+
+  createdAt   DateTime  @default(now())
+
+  @@index([toUserId])
+}
