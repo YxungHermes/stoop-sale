@@ -22,10 +22,10 @@ const config: Config = {
         },
       },
       fontFamily: {
-        // Hand-drawn, casual feel
-        display: ['var(--font-display)', 'Patrick Hand', 'cursive'],
-        body: ['var(--font-body)', 'system-ui', 'sans-serif'],
-        handwritten: ['var(--font-handwritten)', 'Caveat', 'cursive'],
+        // Refined, elegant marketplace feel
+        display: ['var(--font-display)', 'DM Serif Display', 'Georgia', 'serif'],
+        body: ['var(--font-body)', 'Inter', 'system-ui', 'sans-serif'],
+        accent: ['var(--font-accent)', 'Playfair Display', 'Georgia', 'serif'],
       },
       backgroundImage: {
         'blanket-pattern': "url('/textures/blanket.png')",

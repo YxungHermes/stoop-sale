@@ -208,7 +208,7 @@ export function ChatPanel({
                         <p className="text-sm text-stoop-charcoal/60 mb-2">
                           {isOwn ? 'You offered' : `${seller.name} offered`}
                         </p>
-                        <p className="font-handwritten text-3xl text-stoop-charcoal mb-2">
+                        <p className="font-accent text-3xl text-stoop-charcoal mb-2">
                           ${message.offerAmount}
                         </p>
                         {message.offerStatus === 'pending' && !isOwn && (

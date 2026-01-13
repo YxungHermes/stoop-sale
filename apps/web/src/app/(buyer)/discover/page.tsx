@@ -312,7 +312,7 @@ export default function DiscoverPage() {
       <div className="max-w-6xl mx-auto px-4 py-8" ref={containerRef}>
         {/* Intro text */}
         <div className="text-center mb-12 max-w-xl mx-auto">
-          <p className="font-handwritten text-2xl text-stoop-charcoal/80 mb-2">
+          <p className="font-accent text-2xl text-stoop-charcoal/80 mb-2">
             No search bar. No categories. Just... stuff.
           </p>
           <p className="text-stoop-charcoal/60">

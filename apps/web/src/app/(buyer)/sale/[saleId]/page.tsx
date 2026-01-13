@@ -253,7 +253,7 @@ export default function SalePage({ params }: { params: { saleId: string } }) {
 
           {/* Tips */}
           <div className="p-4 bg-stoop-sunshine/20 rounded-xl border-2 border-stoop-sunshine/30">
-            <p className="font-handwritten text-lg text-stoop-charcoal mb-1">
+            <p className="font-accent text-lg text-stoop-charcoal mb-1">
               Pro tip!
             </p>
             <p className="text-sm text-stoop-charcoal/70">

@@ -207,7 +207,7 @@ export function ItemDetailModal({
                 )}
 
                 {item.isOBO && !showOfferInput && (
-                  <p className="text-center text-sm text-stoop-charcoal/60 font-handwritten text-lg">
+                  <p className="text-center text-sm text-stoop-charcoal/60 font-accent text-lg">
                     &ldquo;Or Best Offer&rdquo; - don&apos;t be shy!
                   </p>
                 )}

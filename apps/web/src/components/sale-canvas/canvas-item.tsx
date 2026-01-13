@@ -95,7 +95,7 @@ export function CanvasItem({
         {/* Sold overlay */}
         {isSold && (
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-            <span className="font-handwritten text-2xl text-white transform -rotate-12 bg-red-500 px-3 py-1 rounded">
+            <span className="font-accent text-2xl text-white transform -rotate-12 bg-red-500 px-3 py-1 rounded">
               SOLD!
             </span>
           </div>
@@ -104,7 +104,7 @@ export function CanvasItem({
         {/* Pending overlay */}
         {isPending && (
           <div className="absolute inset-0 bg-yellow-500/30 flex items-center justify-center">
-            <span className="font-handwritten text-lg text-stoop-charcoal transform rotate-6 bg-stoop-sunshine px-2 py-0.5 rounded">
+            <span className="font-accent text-lg text-stoop-charcoal transform rotate-6 bg-stoop-sunshine px-2 py-0.5 rounded">
               Pending
             </span>
           </div>
